@@ -70,10 +70,11 @@ class MovieRecommendResource(Resource) :
         #    중복 제거한다.
         recomm_movie_list = similar_movies_list.groupby('title')['Weight'].max().sort_values(ascending=False).head(count)
 
-        print(recomm_movie_list)
-
+            
         # 8. JSON 으로 클라이언트에 보내야 한다.
         recomm_movie_list = recomm_movie_list.to_frame()
+        print(recomm_movie_list)
+        recomm_movie_list=recomm_movie_list[recomm_movie_list['Weight'] > 0]
         recomm_movie_list = recomm_movie_list.reset_index()
         recomm_movie_list = recomm_movie_list.to_dict('records')
 
