@@ -6,7 +6,7 @@ from mysql.connector import Error
 
 from mysql_connection import get_connection
 from email_validator import validate_email, EmailNotValidError
-
+from flask_jwt_extended import get_jwt_identity
 from utils import check_password, hash_password
 
 
@@ -156,7 +156,40 @@ class UserLogoutResource(Resource) :
 
         return {'result' : 'success'} , 200
 
+class UserInfoResource(Resource) :
+    @jwt_required()
+    def get(self):
 
+        user_id = get_jwt_identity()
 
+        try :
+            connection = get_connection()
+
+            query = '''select email,name,gender
+                        from user
+                        where id = %s ;'''
+
+            record = (user_id, )
+
+            cursor = connection.cursor(dictionary=True)
+
+            cursor.execute(query, record)
+
+            result_list = cursor.fetchall()
+
+            cursor.close()
+            connection.close()
+
+        except Error as e :
+            print(e)            
+            cursor.close()
+            connection.close()
+            return {"error" : str(e)}, 500
+
+        if len(result_list) == 0 :
+            return {'error' : '잘못된 유저 id 입니다.'}
+
+        return {'result' : 'success' ,
+                'user': result_list[0]}
 
 
